@@ -4,11 +4,11 @@ Calculate the Radial Distribution Function (also called Radial Correlation Funct
 
 (2) Contents including:
 
-i.   Average RDF between Oxygen and Oxygen, Oxygen and Hydrogen in bulk water 
+i.   "Average":		Average RDF between Oxygen and Oxygen, Oxygen and Hydrogen in bulk water 
 
-ii.  RDF between Ion Oxygen (O*) and the surrounding Oxygen, Hydrogen, etc.
+ii.  "Ion":		RDF between Ion Oxygen (O*) and the surrounding Oxygen, Hydrogen, etc.
 
-iii. RDF between Oxygen and its wannier center.
+iii. "Wannier_Center":	RDF between Oxygen and its wannier center.
 
 Lixin, Oct 2014
 Modified Apr 2015
