@@ -140,6 +140,7 @@ do
   enddo
   !
   q=0
+  HBIndex=0
   !
   do i=1,nsp(2)
     read(3,*)  iH(i),rH(1:3,i)
