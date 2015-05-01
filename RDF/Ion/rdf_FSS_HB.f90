@@ -189,7 +189,7 @@ do
   !
   !Read .hbcase
   if (cs .eq. 2) then
-    read(2,*,iostat=ierror) stepp, time, dummy, dummy, hba, hbd
+    read(2,*,iostat=ierror) stepp, time, dummy, hba, hbd
     if (ierror .lt. 0) then
       call EOF_PrintOut(ierror,hbcase,ncount,ncount0)
       exit
@@ -239,6 +239,7 @@ do
   !Reminder ends
   !
   if (hbcase .ne. 0 .and. cs .eq. 2 .and. readcase .ne. hbcase) cycle
+  if (numION .eq. 0) cycle
   !******************************************************
   !Zero all temp g(r)
   temgrt = 0
@@ -250,7 +251,7 @@ do
       call get_distance(rIO(1:3),rO(1:3,i),d)
       !write(*,*) "distance:",d
       !if d=0
-      if (d .lt. 0.001) cycle
+      if (d .lt. 0.1) cycle
       nbin = nint(d*res)
       !write(*,*) "nbin is:", nbin
       if (nbin .gt. binNum) nbin = binNum
@@ -292,7 +293,8 @@ subroutine final
 !
 implicit none
 !
-do n=1,binNum-1,1
+!do n=1,binNum-1,1
+do n=1,200,1
   !
   !construct some details of normalization and distance  
   r = DBLE(n)/res
