@@ -138,6 +138,7 @@ do
   read(1,*,iostat=ierror) readstep, time 
   if (readstep .lt. readstep_p .and. readstep_p .ne. 0) then
     write(*,*) "Error! Readstep decreasing!"
+    write(*,*) readstep
     exit
   endif
   if (ierror .lt. 0) then
@@ -406,8 +407,8 @@ do
   !**************************
   !Write index into file.fss 
   !**************************
-  if (numION .eq. 1) write(11,*) readstep, time, numION, new_nsp1,new_nsp2
-  if (numION .ne. 1) write(11,*) readstep, time, numION, new_nsp1,new_nsp2, iiO_record(1:numION)
+  if (numION .eq. 1) write(11,fmt='(I10, F10.6, 3I5)') readstep, time, numION, new_nsp1,new_nsp2
+  if (numION .ne. 1) write(11,fmt='(I10, F10.6, 6I5)') readstep, time, numION, new_nsp1,new_nsp2, iiO_record(1:numION)
   write(12,*) readstep, time
   write(12,*) new_nsp1+new_nsp2, "      1"
   write(11,*) iiO(1),iiH(1:numH,1)
@@ -416,7 +417,7 @@ do
       if (tau_O(j,p) .gt. celldm) tau_O(j,p)=tau_O(j,p)-int(tau_O(j,p)/celldm)*celldm
       if (tau_O(j,p) .lt. 0) tau_O(j,p)=tau_O(j,p)+(abs(int(tau_O(j,p)/celldm))+1)*celldm
     enddo
-    write(11,*) iFSS_O(p),tau_O(1:3,p)*convertBA,h_num(1:4,p)
+    write(11,fmt='(I4,3F9.4,4I5)') iFSS_O(p),tau_O(1:3,p)*convertBA,h_num(1:4,p)
     write(12,*) "O   ",tau_O(1:3,p)*convertBA
   enddo
   do q=1,new_nsp2
@@ -424,7 +425,7 @@ do
       if (tau_H(j,q) .gt. celldm) tau_H(j,q)=tau_H(j,q)-int(tau_H(j,q)/celldm)*celldm
       if (tau_H(j,q) .lt. 0) tau_H(j,q)=tau_H(j,q)+(abs(int(tau_H(j,q)/celldm))+1)*celldm
     enddo
-    write(11,*) iFSS_H(q),tau_H(1:3,q)*convertBA
+    write(11,fmt='(I4,3F9.4)') iFSS_H(q),tau_H(1:3,q)*convertBA
     write(12,*) "H   ",tau_H(1:3,q)*convertBA
     !Modified 20150204
     if (cs .eq. 2) then
