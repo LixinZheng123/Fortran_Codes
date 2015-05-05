@@ -28,7 +28,10 @@ integer                 :: ncount=0
 integer                 :: ierror
 integer                 :: iiO, iiH(3), iiO_t, iiH_t
 integer                 :: num_donate,num_accept,HBnum(2),HBIndex(6,2)
-integer                 :: AXDX(5,5,4)                    !Accept, donate, state
+!integer                 :: AXDX(5,5,4)                    !Accept, donate, state
+integer                 :: A3D1=0, A4D0=0
+integer                 :: A3D0=0, A4D1=0
+integer                 :: other_stable=0
 integer                 :: cov_h(4,15)
 integer                 :: hbcase
 real(DP)                :: time
@@ -74,7 +77,6 @@ write(*,*) 'Output file          : ', trim(filename)//'.hbcase'
 if (cs .eq. 2) numH=1
 if (cs .eq. 3) numH=3
 !
-AXDX=0
 countS=0
 !
 end subroutine init
@@ -91,9 +93,13 @@ select case(io)
   case(1)
     open(unit=3, file=(trim(filename)//'.fss_angs'), status='old')
     open(unit=7, file=(trim(filename)//'.hbcase'), status='unknown')
+    open(unit=18, file=(trim(filename)//'.nfi31'), status='unknown')
+    open(unit=19, file=(trim(filename)//'.nfi40'), status='unknown')
   case(2)
     close(3)
     close(7)
+    close(18)
+    close(19)
   case default
 end select
 
@@ -211,16 +217,33 @@ do
   HBnum(1)=num_accept
   HBnum(2)=num_donate
   !================================================================
-  !For OH-,  the important ones are A4D0*, A3D0*, A3D1*, A2D2
-  !For H3O+, the important ones are A0D3*, A1D3, A1D2, A2D2
+  !For OH-,  the important ones are A4D0*, A3D0*, A3D1*
+  !For H3O+, the important ones are A0D3*
   !
   !
   !Modified 20140902
   hbcase=0
-  if (num_accept .eq. 3 .and. num_donate .eq. 0) hbcase=1
-  if (num_accept .eq. 3 .and. num_donate .eq. 1) hbcase=2
-  if (num_accept .eq. 4 .and. num_donate .eq. 0) hbcase=3
-  if (num_accept .eq. 4 .and. num_donate .eq. 1) hbcase=4
+  if (num_accept .eq. 3 .and. num_donate .eq. 0) then
+    hbcase=1
+    A3D0=A3D0+1
+  endif
+  if (num_accept .eq. 3 .and. num_donate .eq. 1) then
+    hbcase=2
+    A3D1=A3D1+1
+    write(18,*) step
+  endif
+  if (num_accept .eq. 4 .and. num_donate .eq. 0) then
+    hbcase=3
+    A4D0=A4D0+1
+    write(19,*) step
+  endif
+  if (num_accept .eq. 4 .and. num_donate .eq. 1) then
+    hbcase=4
+    A4D1=A4D1+1
+  endif
+  if (num_accept .gt. 4) then
+    other_stable=other_stable+1
+  endif
   !write(7,fmt='(I10,3X,3I5,3X,2I2,3X,4I5,3X,4I5)') &
   write(7,fmt='(I10,3X,F10.3,3X,3I5,3X,6I5,3X,I5)') &
       step, time, iiO, HBnum(1:2),HBIndex(1:6,1),HBIndex(1,2)
@@ -231,62 +254,19 @@ enddo
 !
 !
 !
-!********************writing out*******************
-!
-!write(*,*)
-!write(*,*)
-!write(*,fmt='(5X,"These are the cases when percentage is greater than 1%:")')
-!do i=1,5
-!  do j=1,5
-!    percent(i,j)=(AXDX(i,j,1)+AXDX(i,j,2)+AXDX(i,j,3)+AXDX(i,j,4))/real(ncount)*100
-!    if (percent(i,j) .gt. 1) write(*,fmt='(5X,"A",I1,"D",I1,2X,F5.1)') i-1,j-1,percent(i,j)
-!  enddo
-!enddo
-!write(*,*)
-!write(*,fmt='(5X,"HB accepting/donating percentage in the concerning cases:")')
-!write(*,*)
-!if (cs .eq. 2) then
-!  write(*,fmt='(5X,"A3D0",4X,"A3D1",4X,"A4D0",4X,"A4D1")')
-!  write(*,fmt='(4X,F5.1,3X,F5.1,3X,F5.1,3X,F5.1)') percent(4,1), &
-!                                                   percent(4,2), &
-!                                                   percent(5,1), &
-!                                                   percent(5,2)
-!  !write(9,fmt='(13X,"A3D0",4X,"A3D1",4X,"A4D0",4X,"A4D1")')
-!  !write(9,fmt='("Sum",9X,F5.1,3X,F5.1,3X,F5.1,3X,F5.1)') percent(4,1), &
-!  !                                                       percent(4,2), &
-!  !                                                       percent(5,1), &
-!  !                                                       percent(5,2)
-!  !do state=1,4
-!  !  write(9,fmt='(I1,1X,"(",F4.1,"%)",3X,F5.1,3X,F5.1,3X,F5.1,3X,F5.1)') state, countS(state)/real(ncount)*100, &
-!  !                                                                    AXDX(4,1,state)/real(countS(state))*100, &
-!  !                                                                    AXDX(4,2,state)/real(countS(state))*100, &
-!  !                                                                    AXDX(5,1,state)/real(countS(state))*100, &
-!  !                                                                    AXDX(5,2,state)/real(countS(state))*100
-!  !enddo
-!!
-!else if (cs .eq. 3) then
-!  write(*,fmt='(5X,"A0D3",4X,"A1D3",4X,"A2D3")')
-!  write(*,fmt='(4X,F5.1,3X,F5.1,3X,F5.1)') percent(1,4), &
-!                                           percent(2,4), &
-!                                           percent(3,4)
-!  !write(9,fmt='(13X,"A0D3",4X,"A1D3",4X,"A2D3")')
-!  !write(9,fmt='("Sum",9X,F5.1,3X,F5.1,3X,F5.1)') percent(1,4), &
-!  !                                               percent(2,4), &
-!  !                                               percent(3,4)
-!  !do state=1,4
-!  !  write(9,fmt='(I1,1X,"(",F4.1,"%)",3X,F5.1,3X,F5.1,3X,F5.1)') state, countS(state)/real(ncount)*100, &
-!  !                                                            AXDX(1,4,state)/real(countS(state))*100, &
-!  !                                                            AXDX(2,4,state)/real(countS(state))*100, &
-!  !                                                            AXDX(3,4,state)/real(countS(state))*100
-!  !enddo
-!endif
-!!
-!!write(9,*)
 write(*,*)
 write(*,fmt='(5X,"Average accepting:  ",F4.2)') total_accept/real(ncount)
-!write(9,fmt='("Average accepting:  ",F4.2)') total_accept/real(ncount)
 write(*,fmt='(5X,"Average donating:   ",F4.2)') total_donate/real(ncount)
-!write(9,fmt='("Average donating:   ",F4.2)') total_donate/real(ncount)
+write(*,fmt='(5X,"A3D1 Percentage:    ",F5.2)') A3D1*100/real(ncount)
+write(*,fmt='(5X,"A4D0 Percentage:    ",F5.2)') A4D0*100/real(ncount)
+write(*,fmt='(5X,"A3D0 Percentage:    ",F5.2)') A3D0*100/real(ncount)
+write(*,fmt='(5X,"A4D1 Percentage:    ",F5.2)') A4D1*100/real(ncount)
+write(*,fmt='(5X,"A4   Percentage:    ",F5.2)') (A4D1+A4D0)*100/real(ncount)
+write(*,fmt='(5X,"A3   Percentage:    ",F5.2)') (A3D1+A3D0)*100/real(ncount)
+write(*,fmt='(5X,"D0   Percentage:    ",F5.2)') (A4D0+A3D0)*100/real(ncount)
+write(*,fmt='(5X,"D1   Percentage:    ",F5.2)') (A4D1+A3D1)*100/real(ncount)
+write(*,fmt='(5X,"Other Percentage:    ",F5.2)') 100-(A4D1+A4D0+A3D1+A3D0)*100/real(ncount)
+write(*,fmt='(5X,"Other_stable Percentage:    ",F5.2)') other_stable*100/real(ncount)
 write(*,*)
 write(*,*)
 !!
