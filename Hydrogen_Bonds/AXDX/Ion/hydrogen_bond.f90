@@ -31,7 +31,7 @@ integer                 :: num_donate,num_accept,HBnum(2),HBIndex(6,2)
 !integer                 :: AXDX(5,5,4)                    !Accept, donate, state
 integer                 :: A3D1=0, A4D0=0
 integer                 :: A3D0=0, A4D1=0
-integer                 :: other_stable=0
+integer                 :: other_stable=0, coord=0
 integer                 :: cov_h(4,15)
 integer                 :: hbcase
 real(DP)                :: time
@@ -147,6 +147,7 @@ do
   !
   q=0
   HBIndex=0
+  coord=0
   !
   do i=1,nsp(2)
     read(3,*)  iH(i),rH(1:3,i)
@@ -182,10 +183,10 @@ do
             call get_theta(rO(1:3,p),rIO(1:3),rH(1:3,i),d(1:2),theta)
             if (theta .le. pi/6) then 
               num_accept=num_accept+1
-              if (num_accept .gt. 5) then
-                write(*,'("Error! HB of O* equals to ",I1,"at step= ", I8)') &
-                     num_accept, step
-              endif
+              !if (num_accept .gt. 5) then
+              !  write(*,'("Error! HB of O* equals to ",I1,"at step= ", I8)') &
+              !       num_accept, step
+              !endif
               !write(*,*) p,i,d(3),d(2),theta
               HBIndex(num_accept,1)=iH(i)
               !write(*,*) "Accepting from iH:", i
@@ -244,9 +245,16 @@ do
   if (num_accept .gt. 4) then
     other_stable=other_stable+1
   endif
+  !
+  !
+  ! Tatrahedral-like
+  if (num_accept .eq. 3) coord=1
+  ! Hyper_coordinated
+  if (num_accept .gt. 3) coord=2
+
   !write(7,fmt='(I10,3X,3I5,3X,2I2,3X,4I5,3X,4I5)') &
-  write(7,fmt='(I10,3X,F10.3,3X,3I5,3X,6I5,3X,I5)') &
-      step, time, iiO, HBnum(1:2),HBIndex(1:6,1),HBIndex(1,2)
+  write(7,fmt='(I10,3X,F10.3,3X,I5,3X,3I5,3X,6I5,3X,I5)') &
+      step, time, iiO, coord, HBnum(1:2),HBIndex(1:6,1),HBIndex(1,2)
   !Modified 20140902 ends
   !
   ncount=ncount+1
